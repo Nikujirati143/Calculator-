@@ -1,0 +1,258 @@
+<!DOCTYPE html>
+<html lang="hi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>गुप्त कैलकुलेटर</title>
+    <style>
+        /* CSS - ऐप का स्टाइल */
+        body {
+            background-color: #f0f0f0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            font-family: Arial, sans-serif;
+            margin: 0;
+        }
+        .calculator {
+            background-color: #333;
+            border-radius: 20px;
+            box-shadow: 0 10px 20px rgba(0,0,0,0.2);
+            padding: 20px;
+            width: 320px;
+        }
+        .display {
+            background-color: #444;
+            color: white;
+            font-size: 2.5em;
+            text-align: right;
+            padding: 20px;
+            border-radius: 10px;
+            margin-bottom: 20px;
+            height: 60px;
+            overflow: hidden;
+            word-wrap: break-word;
+        }
+        .buttons {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 10px;
+        }
+        .btn {
+            background-color: #555;
+            color: white;
+            border: none;
+            border-radius: 50%;
+            font-size: 1.5em;
+            height: 65px;
+            width: 65px;
+            cursor: pointer;
+            transition: background-color 0.2s;
+        }
+        .btn:hover {
+            background-color: #666;
+        }
+        .btn.operator {
+            background-color: #f0ad4e;
+        }
+        .btn.operator:hover {
+            background-color: #ec971f;
+        }
+        .btn.zero {
+            grid-column: span 2;
+            width: 140px;
+            border-radius: 35px;
+        }
+        .btn.clear {
+            background-color: #d9534f;
+        }
+        .btn.clear:hover {
+            background-color: #c9302c;
+        }
+
+        /* छिपी हुई गैलरी का स्टाइल */
+        .secret-vault {
+            display: none; /* डिफ़ॉल्ट रूप से छिपा हुआ */
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0,0,0,0.9);
+            color: white;
+            text-align: center;
+            padding-top: 50px;
+        }
+        .secret-vault h2 {
+            font-size: 2em;
+            margin-bottom: 20px;
+        }
+        .photo-gallery {
+            display: flex;
+            justify-content: center;
+            gap: 15px;
+            flex-wrap: wrap;
+        }
+        .photo-gallery img {
+            width: 150px;
+            height: 150px;
+            border-radius: 10px;
+            border: 2px solid #f0ad4e;
+            cursor: pointer;
+        }
+        .close-btn {
+            position: absolute;
+            top: 20px;
+            right: 30px;
+            font-size: 2em;
+            cursor: pointer;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="calculator" id="calculator-view">
+        <div class="display" id="display">0</div>
+        <div class="buttons">
+            <button class="btn clear" onclick="clearDisplay()">AC</button>
+            <button class="btn" onclick="deleteLast()">DEL</button>
+             <a href="tel:100" style="text-decoration: none; text-align: center; line-height: 65px;" class="btn operator">📞</a>
+            <button class="btn operator" onclick="appendOperator('/')">÷</button>
+
+            <button class="btn" onclick="appendNumber('7')">7</button>
+            <button class="btn" onclick="appendNumber('8')">8</button>
+            <button class="btn" onclick="appendNumber('9')">9</button>
+            <button class="btn operator" onclick="appendOperator('*')">×</button>
+
+            <button class="btn" onclick="appendNumber('4')">4</button>
+            <button class="btn" onclick="appendNumber('5')">5</button>
+            <button class="btn" onclick="appendNumber('6')">6</button>
+            <button class="btn operator" onclick="appendOperator('-')">−</button>
+
+            <button class="btn" onclick="appendNumber('1')">1</button>
+            <button class="btn" onclick="appendNumber('2')">2</button>
+            <button class="btn" onclick="appendNumber('3')">3</button>
+            <button class="btn operator" onclick="appendOperator('+')">+</button>
+
+            <button class="btn zero" onclick="appendNumber('0')">0</button>
+            <button class="btn" onclick="appendNumber('.')">.</button>
+            <button class="btn operator" onclick="calculateResult()">=</button>
+        </div>
+    </div>
+
+    <div class="secret-vault" id="secret-vault">
+        <span class="close-btn" onclick="closeVault()">&times;</span>
+        <h2>गुप्त फ़ोटो</h2>
+        <div class="photo-gallery">
+            <img src="https://via.placeholder.com/150/FF5733/FFFFFF?text=Photo+1" alt="गुप्त फोटो 1">
+            <img src="https://via.placeholder.com/150/33FF57/FFFFFF?text=Photo+2" alt="गुप्त फोटो 2">
+            <img src="https://via.placeholder.com/150/3357FF/FFFFFF?text=Photo+3" alt="गुप्त फोटो 3">
+            <img src="https://via.placeholder.com/150/F1C40F/FFFFFF?text=Photo+4" alt="गुप्त फोटो 4">
+        </div>
+    </div>
+
+    <script>
+        // JavaScript - ऐप की कार्यक्षमता
+        const display = document.getElementById('display');
+        let currentInput = '0';
+        let operator = null;
+        let previousInput = '';
+        const secretCode = '1234'; // यह आपका गुप्त कोड है
+
+        function appendNumber(number) {
+            if (currentInput === '0' || currentInput === 'Error') {
+                currentInput = number;
+            } else {
+                currentInput += number;
+            }
+            updateDisplay();
+        }
+
+        function appendOperator(op) {
+            // गुप्त कोड जांचें
+            if (currentInput === secretCode && op === '=') {
+                showVault();
+                return;
+            }
+            if (operator !== null) {
+                calculateResult();
+            }
+            operator = op;
+            previousInput = currentInput;
+            currentInput = '0';
+        }
+
+        function calculateResult() {
+            // गुप्त कोड जांचें जब '=' दबाया जाता है
+            if (currentInput === secretCode && previousInput === '' && operator === null) {
+                showVault();
+                return;
+            }
+
+            if (operator === null || previousInput === '') return;
+
+            let result;
+            const prev = parseFloat(previousInput);
+            const current = parseFloat(currentInput);
+
+            switch (operator) {
+                case '+':
+                    result = prev + current;
+                    break;
+                case '-':
+                    result = prev - current;
+                    break;
+                case '*':
+                    result = prev * current;
+                    break;
+                case '/':
+                    if (current === 0) {
+                        result = 'Error';
+                    } else {
+                        result = prev / current;
+                    }
+                    break;
+                default:
+                    return;
+            }
+            currentInput = result.toString();
+            operator = null;
+            previousInput = '';
+            updateDisplay();
+        }
+
+        function clearDisplay() {
+            currentInput = '0';
+            operator = null;
+            previousInput = '';
+            updateDisplay();
+        }
+        
+        function deleteLast() {
+            if (currentInput.length > 1) {
+                currentInput = currentInput.slice(0, -1);
+            } else {
+                currentInput = '0';
+            }
+            updateDisplay();
+        }
+
+        function updateDisplay() {
+            display.innerText = currentInput;
+        }
+
+        // गुप्त गैलरी के लिए फ़ंक्शन
+        function showVault() {
+            document.getElementById('calculator-view').style.display = 'none';
+            document.getElementById('secret-vault').style.display = 'block';
+        }
+
+        function closeVault() {
+            document.getElementById('calculator-view').style.display = 'block';
+            document.getElementById('secret-vault').style.display = 'none';
+            clearDisplay(); // कैलकुलेटर रीसेट करें
+        }
+    </script>
+</body>
+</html>
